@@ -22,14 +22,14 @@ int main(int argc, char *argv[])
         exit(0);
     } 
 
+	// some variables we need
 	int portno = strtol(argv[1], NULL, 10);
-	int sock_listen_fd, bind_res;
-	socklen_t clilen;
 	struct sockaddr_in server_addr, client_addr;
-	clilen = sizeof(client_addr);
+	socklen_t client_len = sizeof(client_addr);
 
-	sock_listen_fd = socket(AF_INET, SOCK_STREAM, 0);
-	if(sock_listen_fd < 0) {
+	// setup socket
+	int sock_listen_fd = socket(AF_INET, SOCK_STREAM, 0);
+	if (sock_listen_fd < 0) {
 		error("Error creating socket..\n");
 	}
 
@@ -39,16 +39,18 @@ int main(int argc, char *argv[])
 	server_addr.sin_addr.s_addr = INADDR_ANY;
 	
 
-	bind_res = bind(sock_listen_fd, (struct sockaddr *)&server_addr, sizeof(server_addr));
-	if(bind_res < 0)
+	// bind socket and listen for connections
+	if (bind(sock_listen_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
 		error("Error binding socket..\n");
 
 	if (listen(sock_listen_fd, BACKLOG) < 0) {
         error("Error listening..\n");
     }
+	printf("epoll echo server listening for connections on port: %d\n", portno);
+
 
 	struct epoll_event ev, events[MAX_EVENTS];
-	int new_events, newsock, epollfd;
+	int new_events, sock_conn_fd, epollfd;
 	
 	epollfd = epoll_create(MAX_EVENTS);
 	if (epollfd < 0)
@@ -75,15 +77,15 @@ int main(int argc, char *argv[])
 		{
 			if (events[i].data.fd == sock_listen_fd)
 			{
-				newsock = accept(sock_listen_fd, (struct sockaddr *)&client_addr, &clilen);
-				if (newsock == -1)
+				sock_conn_fd = accept4(sock_listen_fd, (struct sockaddr *)&client_addr, &client_len, SOCK_NONBLOCK);
+				if (sock_conn_fd == -1)
 				{
 					error("Error accepting new connection..\n");
 				}
 
 				ev.events = EPOLLIN | EPOLLET;
-				ev.data.fd = newsock;
-				if (epoll_ctl(epollfd, EPOLL_CTL_ADD, newsock, &ev) == -1)
+				ev.data.fd = sock_conn_fd;
+				if (epoll_ctl(epollfd, EPOLL_CTL_ADD, sock_conn_fd, &ev) == -1)
 				{
 					error("Error adding new event to epoll..\n");
 				}
