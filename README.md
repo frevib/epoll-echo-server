@@ -8,6 +8,9 @@
 
 `./epoll_echo_server [port_number]`
 
+## compare with io_uring echo server
+https://github.com/frevib/io_uring-echo-server
+
 
 ## Benchmarks
 * VMWare Ubuntu 18.04
