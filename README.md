@@ -17,14 +17,15 @@
 
 with `rust_echo_bench`: https://github.com/haraldh/rust_echo_bench
 
-command: `cargo run --release -- --address "localhost:5555" --number 50 --duration 30 --length 512`
+command: `cargo run --release -- --address "localhost:5555" --number 50 --duration 60 --length 512`
 
 
 ```
-Benchmarking: localhost:5555
+Benchmarking: localhost:6666
 50 clients, running 512 bytes, 60 sec.
 
-Speed: 189185 request/sec, 189185 response/sec
-Requests: 11351122
-Responses: 11351122
+Speed: 225624 request/sec, 225624 response/sec
+Requests: 13537487
+Responses: 13537486
+
 ```

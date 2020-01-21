@@ -11,6 +11,7 @@
 
 #define BACKLOG 128
 #define MAX_EVENTS 10
+#define MAX_MESSAGE_LEN 1024
 
 void error(char* msg);
 
@@ -18,7 +19,7 @@ void error(char* msg);
 int main(int argc, char *argv[])
 {
     if (argc < 2) {
-        printf("Please give a port number: ./io_uring_echo_server [port]\n");
+        printf("Please give a port number: ./epoll_echo_server [port]\n");
         exit(0);
     } 
 
@@ -26,6 +27,10 @@ int main(int argc, char *argv[])
 	int portno = strtol(argv[1], NULL, 10);
 	struct sockaddr_in server_addr, client_addr;
 	socklen_t client_len = sizeof(client_addr);
+
+	char buffer[MAX_MESSAGE_LEN];
+	memset(buffer, 0, sizeof(buffer));
+
 
 	// setup socket
 	int sock_listen_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -93,10 +98,8 @@ int main(int argc, char *argv[])
 			else
 			{
 				int newsockfd = events[i].data.fd;
-				char buffer[1024];
-				int maxlen = 1000;
-				size_t bytes_read = recv(newsockfd, buffer, maxlen, 0);
-				send(newsockfd, buffer, bytes_read, 0);
+				recv(newsockfd, buffer, MAX_MESSAGE_LEN, 0);
+				send(newsockfd, buffer, MAX_MESSAGE_LEN, 0);
 			}
 		}
 	}
