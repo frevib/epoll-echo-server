@@ -11,7 +11,7 @@
 
 #define BACKLOG 128
 #define MAX_EVENTS 10
-#define MAX_MESSAGE_LEN 1024
+#define MAX_MESSAGE_LEN 2048
 
 void error(char* msg);
 
@@ -98,8 +98,8 @@ int main(int argc, char *argv[])
 			else
 			{
 				int newsockfd = events[i].data.fd;
-				recv(newsockfd, buffer, MAX_MESSAGE_LEN, 0);
-				send(newsockfd, buffer, MAX_MESSAGE_LEN, 0);
+				int bytes_received = recv(newsockfd, buffer, MAX_MESSAGE_LEN, 0);
+				send(newsockfd, buffer, bytes_received, 0);
 			}
 		}
 	}
