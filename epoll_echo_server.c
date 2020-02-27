@@ -10,7 +10,7 @@
 #include <arpa/inet.h>
 
 #define BACKLOG 128
-#define MAX_EVENTS 10
+#define MAX_EVENTS 128
 #define MAX_MESSAGE_LEN 2048
 
 void error(char* msg);
@@ -70,9 +70,10 @@ int main(int argc, char *argv[])
 		error("Error adding new listeding socket to epoll..\n");
 	}
 
-	for(;;)
+	while(1)
 	{
 		new_events = epoll_wait(epollfd, events, MAX_EVENTS, -1);
+		
 		if (new_events == -1)
 		{
 			error("Error in epoll_wait..\n");
@@ -99,13 +100,18 @@ int main(int argc, char *argv[])
 			{
 				int newsockfd = events[i].data.fd;
 				int bytes_received = recv(newsockfd, buffer, MAX_MESSAGE_LEN, 0);
-				send(newsockfd, buffer, bytes_received, 0);
+				if (bytes_received <= 0)
+				{
+					epoll_ctl(epollfd, EPOLL_CTL_DEL, newsockfd, NULL);
+					shutdown(newsockfd, SHUT_RDWR);
+				}
+				else
+				{
+					send(newsockfd, buffer, bytes_received, 0);
+				}
 			}
 		}
 	}
-	
-	close(sock_listen_fd);
-	return 0;
 }
 
 
@@ -113,5 +119,6 @@ int main(int argc, char *argv[])
 void error(char* msg)
 {
 	perror(msg);
+	printf("erreur...\n");
 	exit(1);
 }
